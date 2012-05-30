@@ -5,7 +5,7 @@
 
 class Album;
 
-class Track : public EventEmitter {
+class Track : public ObjectWrap {
  public:
   static Persistent<FunctionTemplate> constructor_template;
 

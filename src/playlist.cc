@@ -30,7 +30,7 @@ static void TracksAdded(sp_playlist *playlist, sp_track *const *tracks,
   }
 
   Handle<Value> argv[] = { Integer::New(position), tracks_array };
-  pl->Emit(String::New("tracksAdded"), 2, argv);
+  //pl->Emit(String::New("tracksAdded"), 2, argv); // TODO masterfix
 }
 
 static void TracksRemoved(sp_playlist *playlist, const int *tracks, int count,
@@ -42,7 +42,7 @@ static void TracksRemoved(sp_playlist *playlist, const int *tracks, int count,
     array->Set(Integer::New(i), Integer::New(tracks[i]));
   }
   Handle<Value> argv[] = { array };
-  pl->Emit(String::New("tracksRemoved"), 1, argv);
+  //pl->Emit(String::New("tracksRemoved"), 1, argv); // TODO masterfix
 }
 
 static void TracksMoved(sp_playlist *playlist, const int *tracks, int count,
@@ -56,13 +56,13 @@ static void TracksMoved(sp_playlist *playlist, const int *tracks, int count,
   }
 
   Handle<Value> argv[] = { array, Integer::New(new_position) };
-  pl->Emit(String::New("tracksMoved"), 2, argv);
+  //pl->Emit(String::New("tracksMoved"), 2, argv); // TODO masterfix
 }
 
 static void PlaylistRenamed(sp_playlist *playlist, void *userdata) {
   // called on the main thread
   Playlist* pl = static_cast<Playlist*>(userdata);
-  pl->Emit(String::New("renamed"), 0, NULL);
+  //pl->Emit(String::New("renamed"), 0, NULL); // TODO masterfix
 }
 
 static void PlaylistStateChanged(sp_playlist *playlist, void *userdata) {
@@ -73,7 +73,7 @@ static void PlaylistStateChanged(sp_playlist *playlist, void *userdata) {
   //       sp_playlist_is_collaborative(playlist),
   //       sp_playlist_has_pending_changes(playlist));
   Playlist* pl = static_cast<Playlist*>(userdata);
-  pl->Emit(String::New("stateChanged"), 0, NULL);
+  //pl->Emit(String::New("stateChanged"), 0, NULL); // TODO masterfix
 }
 
 static void PlaylistUpdateInProgress(sp_playlist *playlist, bool done,
@@ -82,14 +82,15 @@ static void PlaylistUpdateInProgress(sp_playlist *playlist, bool done,
   //printf("[%s] updateInProgress -- done: %s\n",
   //  _PlaylistURI(playlist), done ? "true" : "false");
   Playlist* pl = static_cast<Playlist*>(userdata);
-  pl->Emit(String::New(done ? "updated" : "updating"), 0, NULL);
+  //pl->Emit(String::New(done ? "updated" : "updating"), 0, NULL);
+  // masterfix
 }
 
 static void PlaylistMetadataUpdated(sp_playlist *playlist, void *userdata) {
   // Called when metadata for one or more tracks in a playlist has been updated.
   //printf("[%s] metadataUpdated\n", _PlaylistURI(playlist));
   Playlist* pl = static_cast<Playlist*>(userdata);
-  pl->Emit(String::New("metadataUpdated"), 0, NULL);
+  //pl->Emit(String::New("metadataUpdated"), 0, NULL); // TODO masterfix
 }
 
 static sp_playlist_callbacks callbacks = {
@@ -106,7 +107,7 @@ static sp_playlist_callbacks callbacks = {
 // Playlist implementation
 
 Playlist::Playlist(sp_session* session, sp_playlist* playlist)
-    : EventEmitter()
+    : ObjectWrap()
     , session_(session)
     , playlist_(playlist) {
   if (playlist_) {
@@ -263,14 +264,15 @@ Handle<Value> Playlist::Push(const Arguments& args) {
 
   const sp_track* trax = static_cast<const sp_track*>(malloc(tracks_size));
   trax = tracks[0];
-  sp_error error = sp_playlist_add_tracks(p->playlist_, &trax,
-                                          num_new_tracks, num_tracks,
-                                          s->session_);
+  //sp_error error = sp_playlist_add_tracks(p->playlist_, &trax,
+  //                                        num_new_tracks, num_tracks,
+  //                                        s->session_); // TODO masterfix
 
-  if (error != SP_ERROR_OK)
-    return JS_THROW(Error, sp_error_message(error));
+  //if (error != SP_ERROR_OK)
+  //  return JS_THROW(Error, sp_error_message(error));
+    return JS_THROW(Error, "Fix me!");
 
-  return scope.Close(Integer::New(num_tracks + num_new_tracks));
+  //return scope.Close(Integer::New(num_tracks + num_new_tracks));
 }
 
 Handle<Value> Playlist::LoadedGetter(Local<String> property,
@@ -314,7 +316,8 @@ void Playlist::Initialize(Handle<Object> target) {
   Local<FunctionTemplate> t = FunctionTemplate::New();
   constructor_template = Persistent<FunctionTemplate>::New(t);
   constructor_template->SetClassName(String::NewSymbol("Playlist"));
-  constructor_template->Inherit(EventEmitter::constructor_template);
+  //constructor_template->Inherit(EventEmitter::constructor_template);
+  // masterfix
 
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "push", Push);
 

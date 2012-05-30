@@ -3,7 +3,7 @@
 
 #include "index.h"
 
-class Playlist : public node::EventEmitter {
+class Playlist : public node::ObjectWrap {
  public:
   explicit Playlist(sp_session* session, sp_playlist* playlist);
 

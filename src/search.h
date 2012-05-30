@@ -3,7 +3,7 @@
 
 #include "index.h"
 
-class SearchResult : public EventEmitter {
+class SearchResult : public ObjectWrap {
  public:
   static Persistent<FunctionTemplate> constructor_template;
 

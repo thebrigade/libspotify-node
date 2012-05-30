@@ -4,7 +4,7 @@
 #define SPOTIFY_INDEX_H_
 
 #include <node.h>  // includes v8.h, ev.h, eio.h, sys/types.h, etc
-#include <node_events.h>  // EventEmitter
+#include <node_object_wrap.h>  // Use ObjectWrap instead of EventEmitter
 #include <libspotify/api.h>  // Spotify API
 
 using namespace v8;

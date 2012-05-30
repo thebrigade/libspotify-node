@@ -3,7 +3,7 @@
 
 #include "index.h"
 
-class Album : public EventEmitter {
+class Album : public ObjectWrap {
  public:
   static Persistent<FunctionTemplate> constructor_template;
   static void Initialize(Handle<Object> target);

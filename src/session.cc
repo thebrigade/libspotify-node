@@ -59,7 +59,7 @@ void Session::DequeueLogMessages() {
     const char* message = log_message_queue_.front();
     log_message_queue_.pop();
     Local<Value> argv[] = { String::New(message) };
-    Emit(log_message_symbol, 1, argv);
+    //Emit(log_message_symbol, 1, argv); // TODO masterfix
     delete message;
   }
 }
@@ -74,7 +74,7 @@ static void LogMessage(sp_session* session, const char* data) {
   if (pthread_self() == s->main_thread_id_) {
     // Called from the main runloop thread -- emit directly
     Local<Value> argv[] = { String::New(data) };
-    s->Emit(log_message_symbol, 1, argv);
+    //s->Emit(log_message_symbol, 1, argv); // TODO masterfix
   } else {
     // Called from a background thread -- queue and notify
     const char* message = strdup(data);
@@ -94,7 +94,7 @@ static void MessageToUser(sp_session* session, const char* data) {
   Session* s = reinterpret_cast<Session*>(sp_session_userdata(session));
   assert(s->main_thread_id_ == pthread_self() /* or we will crash */);
   Local<Value> argv[] = { String::New(data) };
-  s->Emit(String::New("message_to_user"), 1, argv);
+  //s->Emit(String::New("message_to_user"), 1, argv); // TODO masterfix
 }
 
 static void LoggedOut(sp_session* session) {
@@ -129,7 +129,7 @@ static void LoggedIn(sp_session* session, sp_error error) {
 static void MetadataUpdated(sp_session *session) {
   Session* s = reinterpret_cast<Session*>(sp_session_userdata(session));
   assert(s->main_thread_id_ == pthread_self() /* or we will crash */);
-  s->Emit(String::New("metadataUpdated"), 0, NULL);
+  //s->Emit(String::New("metadataUpdated"), 0, NULL); // TODO masterfix
   s->metadata_update_queue_.process(s->session_, s->handle_);
 }
 
@@ -137,7 +137,7 @@ static void ConnectionError(sp_session* session, sp_error error) {
   Session* s = reinterpret_cast<Session*>(sp_session_userdata(session));
   assert(s->main_thread_id_ == pthread_self() /* or we will crash */);
   Local<Value> argv[] = { String::New(sp_error_message(error)) };
-  s->Emit(String::New("connection_error"), 1, argv);
+  //s->Emit(String::New("connection_error"), 1, argv); // TODO masterfix
 }
 
 static void SearchComplete(sp_search *search, void *userdata) {
@@ -330,7 +330,7 @@ Handle<Value> Session::Login(const Arguments& args) {
   // save login callback
   if (s->login_callback_) cb_destroy(s->login_callback_);
   s->login_callback_ = cb_persist(args[2]);
-  sp_session_login(s->session_, *username, *password);
+  //sp_session_login(s->session_, *username, *password); // TODO masterfix
   return Undefined();
 }
 
@@ -516,7 +516,7 @@ void Session::Initialize(Handle<Object> target) {
   HandleScope scope;
   Local<FunctionTemplate> t = FunctionTemplate::New(New);
   t->SetClassName(String::NewSymbol("Session"));
-  t->Inherit(EventEmitter::constructor_template);
+  //t->Inherit(EventEmitter::constructor_template); // TODO masterfix
 
   NODE_SET_PROTOTYPE_METHOD(t, "logout", Logout);
   NODE_SET_PROTOTYPE_METHOD(t, "login", Login);
