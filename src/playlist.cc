@@ -2,8 +2,9 @@
 #include "playlistcontainer.h"
 #include "session.h"
 #include "track.h"
-
+#if !defined(__APPLE__)
 #include <malloc.h>
+#endif
 #include <list>
 #include <map>
 #include <vector>

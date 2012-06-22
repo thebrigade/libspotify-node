@@ -1,4 +1,4 @@
-var sys = require('sys'),
+var util = require('util'),
     fs = require('fs'),
     spawn = require('child_process').spawn;
 
@@ -6,14 +6,13 @@ process.chdir(__dirname);
 
 var stopOnFailure = true; // set to true to abort on first failure
 var failcount = 0, runcount = 0;
-var stderrWrite = process.binding('stdio').writeError;
 var files = fs.readdirSync('.').filter(function(fn){
   return fn.match(/^test-.+\.js$/)
 }).sort();
 var totalcount = files.length;
 
 function done() {
-  sys.puts('>>> ran '+runcount+' of '+totalcount+' tests with '+
+  util.puts('>>> ran '+runcount+' of '+totalcount+' tests with '+
     failcount+' failure(s)');
   process.exit(failcount ? 1 : 0);
 }
@@ -34,10 +33,10 @@ function runNext() {
   });
   child.stderr.on('data', function (data) {
     if (data.length >= 7 && data.toString('ascii', 0, 7) === 'execvp(') {
-      console.error('>>> fail '+fn+' -- execvp('+sys.inspect(nodebin)+
-        ', '+sys.inspect(args)+') failed: '+data.toString('utf8'));
+      process.stderr.write('>>> fail '+fn+' -- execvp('+util.inspect(nodebin)+
+        ', '+util.inspect(args)+') failed: '+data.toString('utf8'));
     } else {
-      stderrWrite(data);
+      process.stderr.write(data);
     }
   });
   child.on('exit', function (code) {

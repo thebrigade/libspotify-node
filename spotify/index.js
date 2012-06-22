@@ -1,4 +1,4 @@
-var binding = require('./binding');
+var binding = require('../build/Release/binding');
 Object.keys(binding).forEach(function(k){ exports[k] = binding[k]; });
 
 // helper to define immutable <constants> on <obj> -- see below for examples

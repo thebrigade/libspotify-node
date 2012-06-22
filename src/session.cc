@@ -368,6 +368,8 @@ Handle<Value> Session::Search(const Arguments& args) {
   const int kDefaultAlbumCount = 10;
   const int kDefaultArtistOffset = 0;
   const int kDefaultArtistCount = 10;
+  const int kDefaultPlaylistOffset = 0;
+  const int kDefaultPlaylistCount = 10;
 
   Handle<Value> query;
   int track_offset;
@@ -376,6 +378,8 @@ Handle<Value> Session::Search(const Arguments& args) {
   int album_count;
   int artist_offset;
   int artist_count;
+  int playlist_offset;
+  int playlist_count;
 
   if (args[0]->IsString()) {
     query = args[0];
@@ -397,6 +401,8 @@ Handle<Value> Session::Search(const Arguments& args) {
     IOPT("albumCount", album_count, kDefaultAlbumOffset);
     IOPT("artistOffset", artist_offset, kDefaultArtistOffset);
     IOPT("artistCount", artist_count, kDefaultArtistCount);
+    IOPT("playlistOffset", playlist_offset, kDefaultPlaylistOffset);
+    IOPT("playlistCount", playlist_count, kDefaultPlaylistCount);
 
     #undef IOPT
   }
@@ -409,6 +415,8 @@ Handle<Value> Session::Search(const Arguments& args) {
                                        track_offset, track_count,
                                        album_offset, album_count,
                                        artist_offset, artist_count,
+                                       playlist_offset, playlist_count,
+                                       SP_SEARCH_STANDARD,
                                        &SearchComplete, search_data);
 
   if (!search)
