@@ -11,8 +11,13 @@
 
 ### Requirements
 
-- [Nodejs](http://nodejs.org/) >= 0.1.100
-- [libspotify](http://developer.spotify.com/en/libspotify/) == 0.0.4
+- [Nodejs](http://nodejs.org/) >= 0.6
+- [libspotify](https://developer.spotify.com/technologies/libspotify/) == 12.1.51
+
+> **Notes on installing libspotify for Mac OSX**
+> 1. [Download libspotify zip](https://developer.spotify.com/technologies/libspotify/)
+> 2. sudo ln -s $libspotify_downlaod_dir/libspotify.framework /Library/Frameworks/libspotify.framework
+> 3. sudo ln -s /Library/Frameworks/libspotify.framework/libspotify /usr/local/lib/libspotify.so
 
 ## Example
 
