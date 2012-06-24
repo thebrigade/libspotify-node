@@ -20,6 +20,11 @@ typedef struct search_data {
   Persistent<Function> *callback;
 } search_data_t;
 
+typedef struct user_data {
+  Session *session;
+  Persistent<Function> *callback;
+} user_data_t;
+
 static Persistent<String> log_message_symbol;
 
 // ----------------------------------------------------------------------------
@@ -162,6 +167,59 @@ static void SearchComplete(sp_search *search, void *userdata) {
   cb_destroy(sdata->callback);
   delete sdata;
 }
+
+static void ImageLoadComplete(sp_image *image, void *userdata) {
+ 
+  user_data_t *udata = static_cast<user_data_t*>(userdata);
+  Session *s = udata->session;
+
+  byte* raw;
+	size_t sz = 0;
+	(const void*) raw = sp_image_data(image,&sz);
+	printf("Image is %lu bytes", sz);
+	Local<Array> array = Array::New(sz);
+	for (int i = 0; i < sz; i++) {
+	    array->Set(Integer::New(i), Integer::New(raw[i]));
+	}
+	
+	Handle<Value> argv[] = {
+      Undefined(), Integer::New(sz), array
+    };
+    
+	(*udata->callback)->Call(s->handle_, 3, argv);
+	cb_destroy(udata->callback);
+	sp_image_release(image);
+	delete udata;
+}
+
+static void AlbumBrowseComplete(sp_albumbrowse *result, void *userdata) {
+	
+	user_data_t *udata = static_cast<user_data_t*>(userdata);
+  	Session *s = udata->session;
+
+	if (!result || (sp_albumbrowse_error (result) != SP_ERROR_OK)) {
+		Local<Value> argv[] = {
+	      Exception::Error(String::New(sp_error_message(sp_albumbrowse_error(result))))
+	    };
+		(*udata->callback)->Call(s->handle_, 1, argv);
+		delete udata;
+		return;
+  	}
+
+	sp_album* album = sp_albumbrowse_album(result);
+	sp_image* image = sp_image_create(s->session_, sp_album_cover(album, SP_IMAGE_SIZE_NORMAL)); 
+
+	if(!image /*|| (sp_image_error(image) != SP_ERROR_OK)*/) {
+		Local<Value> argv[] = {
+	      Exception::Error(String::New(sp_error_message(sp_image_error(image))))
+	    };
+	    (*udata->callback)->Call(s->handle_, 1, argv);
+	} else {
+		sp_image_add_load_callback (image, ImageLoadComplete, udata);	
+	}
+	
+}
+
 
 // ----------------------------------------------------------------------------
 // Session implementation
@@ -330,7 +388,7 @@ Handle<Value> Session::Login(const Arguments& args) {
   // save login callback
   if (s->login_callback_) cb_destroy(s->login_callback_);
   s->login_callback_ = cb_persist(args[2]);
-  //sp_session_login(s->session_, *username, *password); // TODO masterfix
+  sp_session_login(s->session_, *username, *password, 0, NULL); 
   return Undefined();
 }
 
@@ -476,6 +534,43 @@ Handle<Value> Session::GetTrackByLink(const Arguments& args) {
   return scope.Close(track);
 }
 
+Handle<Value> Session::GetAlbumImageByLink(const Arguments& args) {
+  HandleScope scope;
+
+  if (args.Length() < 1)
+    return JS_THROW(TypeError, "getAlbumByLink takes at least one argument");
+  if (args.Length() > 1) {
+    if (!args[1]->IsFunction())
+      return JS_THROW(TypeError, "last argument must be a function");
+  }
+
+  Session* s = Unwrap<Session>(args.This());
+  String::Utf8Value linkstr(args[0]);
+
+  // derive sp_link from string
+  sp_link *link = sp_link_create_from_string(*linkstr);
+  if (!link) {
+    return CallbackOrThrowError(s->handle_, args[1], "invalid link");
+  }
+
+  sp_album *album = sp_link_as_album(link);
+
+  if (!album) {
+    return CallbackOrThrowError(s->handle_, args[1], "not an album link");
+  }
+
+	user_data_t *udata = new user_data_t;
+  	udata->session = s;
+  	udata->callback = cb_persist(args[1]);
+
+	sp_albumbrowse* albumbrowse = sp_albumbrowse_create	(s->session_,album,&AlbumBrowseComplete,udata);
+  
+	if (!albumbrowse)
+    	return JS_THROW(Error, "libspotify internal error when requesting albumbrowse");
+
+  	return Undefined();
+}
+
 // ---------
 // Properties
 
@@ -530,6 +625,7 @@ void Session::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(t, "login", Login);
   NODE_SET_PROTOTYPE_METHOD(t, "search", Search);
   NODE_SET_PROTOTYPE_METHOD(t, "getTrackByLink", GetTrackByLink);
+  NODE_SET_PROTOTYPE_METHOD(t, "getAlbumImageByLink", GetAlbumImageByLink);
 
   Local<ObjectTemplate> instance_t = t->InstanceTemplate();
   instance_t->SetInternalFieldCount(1);
