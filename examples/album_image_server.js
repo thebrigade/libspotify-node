@@ -24,30 +24,32 @@ http.createServer(function(req, res){
 
 	// Todo: Check for file in (our) cache first
 
-    session.getAlbumImageByLink(album_id, function(err, size, bytes) {
+      session.getAlbumImageByLink(album_id, function(err, size, bytes) {
 		
-			if(err) {
-				console.log(err);
-				res.writeHead(200, {'Content-Type': 'text/plain' });
-			     res.end('Unkown Album');
-				return;
-			} 
+	  if(err) {
+	      console.log(err);
+	      res.writeHead(200, {'Content-Type': 'text/plain' });
+	      res.end('Unkown Album');
+	      return;
+	  } 
 			
-		console.log('got album image:' + size + ' bytes');
-		
-		// Save to disk	
-		/*	new BufferedWriter (album_id)
-			    .on ("error", function (error){
-			        console.log (error);
-			    }).write (bytes, 0, size) .close ();
-				
-				res.writeHead(200, {'Content-Type': 'image/jpeg' });
-			    res.end(new Buffer(bytes), 'binary');
-		*/
-	  });
-     
+	  console.log('got album image:' + size + ' bytes');
+
+	
+	  // Save to disk
+          /*
+	  new BufferedWriter (album_id)
+	      .on ("error", function (error){
+		  console.log (error);
+	      }).write (bytes, 0, size) .close ();
+          */
+	  
+	  res.writeHead(200, {'Content-Type': 'image/jpeg' });
+	  res.end(new Buffer(bytes), 'binary');
+      });
+      
   } else { 
-     res.writeHead(200, {'Content-Type': 'text/plain' });
-     res.end('Unkown Album');
+      res.writeHead(200, {'Content-Type': 'text/plain' });
+      res.end('Unkown Album');
   }
 }).listen(8080, '127.0.0.1');
