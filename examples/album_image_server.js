@@ -26,27 +26,27 @@ http.createServer(function(req, res){
 
       session.getAlbumImageByLink(album_id, function(err, size, bytes) {
 		
-	  if(err) {
-	      console.log(err);
-	      res.writeHead(200, {'Content-Type': 'text/plain' });
-	      res.end('Unkown Album');
-	      return;
-	  } 
-			
-	  console.log('got album image:' + size + ' bytes');
-
-	
-	  // Save to disk
+	        if(err) {
+	            console.log(err);
+	            res.writeHead(200, {'Content-Type': 'text/plain' });
+	            res.end('Unkown Album');
+	            return;
+	        } 
+			    
+	        console.log('got album image:' + size + ' bytes');
+          
+	        
+	        // Save to disk
           /*
-	  new BufferedWriter (album_id)
-	      .on ("error", function (error){
-		  console.log (error);
-	      }).write (bytes, 0, size) .close ();
+	          new BufferedWriter (album_id)
+	          .on ("error", function (error){
+		        console.log (error);
+	          }).write (bytes, 0, size) .close ();
           */
-	  
-	  res.writeHead(200, {'Content-Type': 'image/jpeg' });
-	  res.end(new Buffer(bytes), 'binary');
-      });
+	        
+	        res.writeHead(200, {'Content-Type': 'image/jpeg' });
+	        res.end(new Buffer(bytes), 'binary');
+      }, 'LARGE');
       
   } else { 
       res.writeHead(200, {'Content-Type': 'text/plain' });

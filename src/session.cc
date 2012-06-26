@@ -23,6 +23,7 @@ typedef struct search_data {
 typedef struct user_data {
   Session *session;
   Persistent<Function> *callback;
+  sp_image_size imageSize;
 } user_data_t;
 
 static Persistent<String> log_message_symbol;
@@ -184,7 +185,7 @@ static void ImageLoadComplete(sp_image *image, void *userdata) {
 	
 	Handle<Value> argv[] = {
       Undefined(), Integer::New(sz), array
-    };
+  };
     
 	(*udata->callback)->Call(s->handle_, 3, argv);
 	cb_destroy(udata->callback);
@@ -204,10 +205,10 @@ static void AlbumBrowseComplete(sp_albumbrowse *result, void *userdata) {
 		(*udata->callback)->Call(s->handle_, 1, argv);
 		delete udata;
 		return;
-  	}
+  }
 
 	sp_album* album = sp_albumbrowse_album(result);
-	sp_image* image = sp_image_create(s->session_, sp_album_cover(album, SP_IMAGE_SIZE_NORMAL)); 
+	sp_image* image = sp_image_create(s->session_, sp_album_cover(album, udata->imageSize)); 
 
 	if(!image /*|| (sp_image_error(image) != SP_ERROR_OK)*/) {
 		Local<Value> argv[] = {
@@ -559,9 +560,12 @@ Handle<Value> Session::GetAlbumImageByLink(const Arguments& args) {
     return CallbackOrThrowError(s->handle_, args[1], "not an album link");
   }
 
+  sp_image_size imageSize = (args.Length() > 2) ? SP_IMAGE_SIZE_LARGE : SP_IMAGE_SIZE_NORMAL;
+
 	user_data_t *udata = new user_data_t;
   	udata->session = s;
   	udata->callback = cb_persist(args[1]);
+    udata->imageSize = imageSize;
 
 	sp_albumbrowse* albumbrowse = sp_albumbrowse_create	(s->session_,album,&AlbumBrowseComplete,udata);
   
