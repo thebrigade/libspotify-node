@@ -560,19 +560,24 @@ Handle<Value> Session::GetAlbumImageByLink(const Arguments& args) {
     return CallbackOrThrowError(s->handle_, args[1], "not an album link");
   }
 
-  sp_image_size imageSize = (args.Length() > 2) ? SP_IMAGE_SIZE_LARGE : SP_IMAGE_SIZE_NORMAL;
+  sp_image_size imageSize = SP_IMAGE_SIZE_NORMAL;
+  if (args.Length() > 2) {
+    uint sizeParam = args[2]->Uint32Value();
+    if (sizeParam == 1) imageSize = SP_IMAGE_SIZE_SMALL;
+    if (sizeParam == 2) imageSize = SP_IMAGE_SIZE_LARGE;
+  }
 
-	user_data_t *udata = new user_data_t;
-  	udata->session = s;
-  	udata->callback = cb_persist(args[1]);
-    udata->imageSize = imageSize;
-
-	sp_albumbrowse* albumbrowse = sp_albumbrowse_create	(s->session_,album,&AlbumBrowseComplete,udata);
+  user_data_t *udata = new user_data_t;
+  udata->session = s;
+  udata->callback = cb_persist(args[1]);
+  udata->imageSize = imageSize;
   
-	if (!albumbrowse)
-    	return JS_THROW(Error, "libspotify internal error when requesting albumbrowse");
+  sp_albumbrowse* albumbrowse = sp_albumbrowse_create	(s->session_,album,&AlbumBrowseComplete,udata);
+  
+  if (!albumbrowse)
+    return JS_THROW(Error, "libspotify internal error when requesting albumbrowse");
 
-  	return Undefined();
+  return Undefined();
 }
 
 // ---------
