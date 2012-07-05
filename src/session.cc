@@ -176,7 +176,7 @@ static void ImageLoadComplete(sp_image *image, void *userdata) {
 
   byte* raw;
 	size_t sz = 0;
-	(const void*) raw = sp_image_data(image,&sz);
+        raw = (byte *)sp_image_data(image,&sz);
 	printf("Image is %lu bytes", sz);
 	Local<Array> array = Array::New(sz);
 	for (int i = 0; i < sz; i++) {
